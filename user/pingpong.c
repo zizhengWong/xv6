@@ -26,13 +26,12 @@ int main(int argc, char const *argv[]) {
         } else {
             fprintf(1, "%d: received ping\n", getpid());
         }
+        close(fd[RD]);
 
         if (write(fd[WR], &buf, sizeof(char)) != sizeof(char)) {
             fprintf(2, "child write() error!\n");
             exit_status = 1;
         }
-
-        close(fd[RD]);
         close(fd[WR]);
 
         exit(exit_status);
@@ -42,6 +41,7 @@ int main(int argc, char const *argv[]) {
             fprintf(2, "parent write() error!\n");
             exit_status = 1;
         }
+        close(fd[WR]);
 
         if (read(fd[RD], &buf, sizeof(char)) != sizeof(char)) {
             fprintf(2, "parent read() error!\n");
@@ -49,8 +49,6 @@ int main(int argc, char const *argv[]) {
         } else {
             fprintf(1, "%d: received pong\n", getpid());
         }
-
-        close(fd[WR]);
         close(fd[RD]);
 
         exit(exit_status);
