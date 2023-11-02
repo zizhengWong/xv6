@@ -449,3 +449,21 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+
+void vmsprint(pagetable_t pagetable, int tag){
+  if(tag>2)return;  //三级页表
+  for(int i = 0; i < 512; i++){ //遍历所有PTE
+    pte_t pte = pagetable[i];
+    if(pte & PTE_V){  //如果该PTE有效
+      for(int j = tag; j; j--)  //以指定格式输出有关信息。
+        printf(".. ");
+      printf("..%d: pte %p pa %p\n",i,pte,(pagetable_t)PTE2PA(pte)); // 转为物理地址
+      vmsprint((pagetable_t)PTE2PA(pte),tag+1); //获取下一级页表的物理地址，递归处理下一级页表
+    }
+  }
+}
+void vmprint(pagetable_t pagetable){
+  printf("page table %p\n",pagetable);//输出第一行
+  vmsprint(pagetable,0);
+}
