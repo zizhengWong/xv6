@@ -74,7 +74,23 @@ sys_sleep(void)
 int
 sys_pgaccess(void)
 {
-  // lab pgtbl: your code here.
+  uint64 st;
+  argaddr(0,&st); //获取user page虚拟地址
+  char *buf = (char*)st;
+  int len = 0;
+  argint(1,&len); //获取要check的页数
+  if(len > 32)len = 32; //限制check最大页数
+  unsigned int abits = 0; //存储位掩码
+  for(int i = 0; i < len; i++){
+    pte_t *pte = walk(myproc()->pagetable, (uint64)buf+PGSIZE * i, 0); //获取最下级页表表项
+    if(*pte & PTE_A){
+        *pte &= ~PTE_A; //清除PTE_A
+        abits |= (1 << i); //获取位掩码
+    }
+  }
+  argaddr(2,&st); //获取缓冲区的地址
+  if(copyout(myproc()->pagetable, st, (char *)&abits, sizeof(abits)) < 0) //将位掩码拷贝到用户缓冲区
+    return -1;
   return 0;
 }
 #endif
